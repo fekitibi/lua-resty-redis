@@ -243,6 +243,18 @@ The optional `options_table` argument is a Lua table holding the following keys:
 
     If set to true, then verifies the validity of the server SSL certificate (defaults to false). Note that you need to configure the lua_ssl_trusted_certificate to specify the CA (or server) certificate used by your redis server. You may also need to configure lua_ssl_verify_depth accordingly.
 
+* `ssl_format`
+
+    Specifies the format of ssl_cert and ssl_key, either "pem" or "der". Defaults to "pem".
+
+* `ssl_cert`
+
+    If specified, this is the SSL/TLS certificate in string format that the client sends during the handshake.
+
+* `ssl_key`
+
+    If specified, this is the private key in string format corresponding to ssl_cert during authentication.
+
 * `server_name`
 
     Specifies the server name for the new TLS extension Server Name Indication (SNI) when connecting over SSL.

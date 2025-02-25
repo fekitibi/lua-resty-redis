@@ -17,6 +17,7 @@ local tostring = tostring
 local rawget = rawget
 local select = select
 local tb_clear = require "table.clear"
+local ssl = require "ngx.ssl"
 --local error = error
 
 
@@ -95,6 +96,34 @@ function _M.new(self)
                           },
                         }, mt)
 end
+
+local function load_ssl_certificates(sock, format, cert, key)
+    local parse_cert = ssl.parse_pem_cert
+    local parse_key = ssl.parse_pem_priv_key
+
+    if format == "der" then
+        parse_cert = ssl.parse_der_cert
+        parse_key = ssl.parse_der_priv_key
+    end
+
+    local cert_chain, err = parse_cert(cert)
+    if not cert_chain then
+        return nil, "Failed to parse SSL certificate: " .. err 
+    end
+
+    local priv_key, err = parse_key(key)
+    if not priv_key then
+        return nil, "Failed to parse SSL private key: " .. err
+    end
+
+    local ok, err = sock:setclientcert(cert_chain, priv_key)
+    if not ok then
+        return nil, "Failed to set client certificate and key: " .. err
+    end
+
+    return true
+end
+
 
 
 function _M.register_module_prefix(mod)
@@ -194,9 +223,20 @@ function _M.connect(self, host, port_or_opts, opts)
     end
 
     if opts and opts.ssl then
+        if opts.ssl_cert and opts.ssl_key then
+            if type(opts.ssl_cert) ~= "string" or type(opts.ssl_key) ~= "string" then
+                return nil, "SSL certificate and key must be strings"
+            end
+    
+            ok, err = load_ssl_certificates(sock, opts.opts.ssl_format, opts.ssl_cert, opts.ssl_key)
+            if not ok then
+                return nil, err
+            end
+        end
+    
         ok, err = sock:sslhandshake(false, opts.server_name, opts.ssl_verify)
         if not ok then
-            return ok, "failed to do ssl handshake: " .. err
+            return nil, "Failed to complete SSL handshake: " .. err
         end
     end
 
