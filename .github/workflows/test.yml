@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   run-test:
@@ -37,3 +37,7 @@ jobs:
       - name: Verify Test::Nginx installation
         run: |
           perl -MTest::Nginx -e 'print "Test::Nginx is installed\n"'
+      
+      - name: Run Test
+        run: |
+          make test
