@@ -1,0 +1,38 @@
+name: "[CI.Lint] Run test on Push"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  run-test:
+    name: Run Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Install openresty
+        run: |
+          sudo systemctl disable nginx
+          sudo systemctl stop nginx
+
+          sudo apt-get -y install --no-install-recommends wget gnupg ca-certificates lsb-release
+          wget -O - https://openresty.org/package/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/openresty.gpg
+
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/openresty.gpg] http://openresty.org/package/ubuntu $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/openresty.list > /dev/null
+          sudo apt-get update
+
+          sudo apt-get -y install openresty
+          
+      - name: Install Openrety Test framekwork
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make cpanminus libtest-nginx-perl
+          
+          sudo cpanm --notest Test::Nginx
+
+      - name: Verify Test::Nginx installation
+        run: |
+          perl -MTest::Nginx -e 'print "Test::Nginx is installed\n"'
