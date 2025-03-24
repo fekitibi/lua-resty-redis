@@ -40,4 +40,5 @@ jobs:
       
       - name: Run Test
         run: |
+          export PERL5LIB="$(pwd):"
           make test
