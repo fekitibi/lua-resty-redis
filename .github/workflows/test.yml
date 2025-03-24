@@ -30,9 +30,14 @@ jobs:
       - name: Install Openrety Test framekwork
         run: |
           sudo apt-get update
-          sudo apt-get install -y make cpanminus libtest-nginx-perl
+          sudo apt-get install -y build-essential libreadline-dev unzip curl make cpanminus libtest-nginx-perl
           
           sudo cpanm --notest Test::Nginx
+
+      - name: Install LuaJIT
+        run: |
+          sudo apt-get install -y luajit
+          luajit -v  # Verify installation
 
       - name: Verify Test::Nginx installation
         run: |
